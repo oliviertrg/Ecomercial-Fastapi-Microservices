@@ -76,8 +76,25 @@ async def delete_order(product_id : str,current_user : int = Depends(auth2.get_c
 #                          detail="CAN'T FIND ANY PRODUCTS ")
 #   return resp 
 
+
+@router.get('/view/all')
+async def view_all(current_user : int = (Depends(auth2.get_current_user),Depends(auth2_users.get_current_user))):
+  try:
+    r = list()
+    ree = es.search(index="grocery_store", query={"match_all": {}})
+    if len(ree['hits']['hits']) == 0 :
+      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                         detail="CAN'T FIND ANY PRODUCTS ")
+    for i in ree['hits']['hits']:
+     r.append(i["_source"]) 
+  except Exception as e:
+     print(f"Error {e}")
+     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                         detail="CAN'T FIND ANY PRODUCTS ")
+  return r
+
 @router.get('/views/{search_query}')
-async def view_orders(search_query : str,current_user : int = (Depends(auth2.get_current_user),Depends(auth2_users.get_current_user))):
+async def view(search_query : str,current_user : int = (Depends(auth2.get_current_user),Depends(auth2_users.get_current_user))):
   try:
     r = list()
     ree = es.search(index="grocery_store",query={"multi_match": {"query": search_query,
@@ -93,21 +110,7 @@ async def view_orders(search_query : str,current_user : int = (Depends(auth2.get
                          detail="CAN'T FIND ANY PRODUCTS ")
   return r
 
-@router.get('/views/all')
-async def view_orders(search_query : str,current_user : int = (Depends(auth2.get_current_user),Depends(auth2_users.get_current_user))):
-  try:
-    r = list()
-    ree = es.search(index="grocery_store", query={"match_all": {}})
-    if len(ree['hits']['hits']) == 0 :
-      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                         detail="CAN'T FIND ANY PRODUCTS ")
-    for i in ree['hits']['hits']:
-     r.append(i["_source"]) 
-  except Exception as e:
-     print(f"Error {e}")
-     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                         detail="CAN'T FIND ANY PRODUCTS ")
-  return r
+
 
 
 

@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: warehouse-server-deployment
+  labels:
+    app: warehouse-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: warehouse-server
+  template:
+    metadata:
+      labels:
+        app: warehouse-server
+    spec:
+      containers:
+      - name: warehouse-server
+        image: rioverrain/grocery_store_warehouse_server:latest
+        ports:
+          - containerPort: 9100
+            name: http
+            protocol: TCP
+        env :
+         - name: POSTGRES_DB
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: POSTGRES_DB
+         - name: POSTGRES_USER
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: POSTGRES_USER
+         - name: POSTGRES_PASSWORD
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: POSTGRES_PASSWORD
+         - name: SECRET_KEY
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: SECRET_KEY   
+         - name: SECRET_KEY_USERS
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: SECRET_KEY_USERS        
+         - name: ALGORITHM
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: ALGORITHM   
+         - name: ACCESS_TOKEN_EXPIRE_MINUTES
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: ACCESS_TOKEN_EXPIRE_MINUTES
+         - name: ELASTIC_USER
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: ELASTIC_USER        
+         - name: ELASTIC_PASSWORD
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: ELASTIC_PASSWORD         
+      
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: warehouse-server-service
+spec:
+  selector:
+    app: warehouse-server
+  ports:
+    - port: 9100
+    

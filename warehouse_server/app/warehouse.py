@@ -33,7 +33,7 @@ async def import_merchandise(request: Request,current_user : int = Depends(auth2
 
 
 
-@router.put('/update_product/{product_id}',status_code=status.HTTP_200_OK)
+@router.put('/update_products/{product_id}',status_code=status.HTTP_200_OK)
 async def update_product(product_id : str,request: Request ,current_user : int = Depends(auth2.get_current_user)):
     try:
      body = await request.json()
@@ -77,7 +77,7 @@ async def delete_order(product_id : str,current_user : int = Depends(auth2.get_c
 #   return resp 
 
 
-@router.get('/view/all')
+@router.get('/views/query=all')
 async def view_all(current_user : int = (Depends(auth2.get_current_user),Depends(auth2_users.get_current_user))):
   try:
     r = list()
@@ -93,7 +93,7 @@ async def view_all(current_user : int = (Depends(auth2.get_current_user),Depends
                          detail="CAN'T FIND ANY PRODUCTS ")
   return r
 
-@router.get('/views/{search_query}')
+@router.get('/views/query={search_query}')
 async def view(search_query : str,current_user : int = (Depends(auth2.get_current_user),Depends(auth2_users.get_current_user))):
   try:
     r = list()

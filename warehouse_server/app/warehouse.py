@@ -77,7 +77,7 @@ async def delete_order(product_id : str,current_user : int = Depends(auth2.get_c
 #   return resp 
 
 
-@router.get('/views/query=all')
+@router.get('/views/query=*')
 async def view_all(current_user : int = (Depends(auth2.get_current_user),Depends(auth2_users.get_current_user))):
   try:
     r = list()

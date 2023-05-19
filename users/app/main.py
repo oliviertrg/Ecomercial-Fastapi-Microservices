@@ -1,15 +1,15 @@
 from fastapi import FastAPI , status ,HTTPException,APIRouter
-from app import auth,warehouse,auth
+from app import users,auth,auth_users
 from fastapi.middleware.cors import  CORSMiddleware
 from starlette.requests import Request
 
-from warehouse_server.app import admin
+from users.app import orders
 
 
 
 app = FastAPI()
 
-origins = ["http://0.0.0.0:9100/"]
+origins = ["http://0.0.0.0:6969/"]
 
 app.add_middleware(
     CORSMiddleware ,
@@ -19,9 +19,10 @@ app.add_middleware(
     allow_headers = ["*"]
 )
 
-app.include_router(admin.router)
+app.include_router(users.router)
 app.include_router(auth.router)
-app.include_router(warehouse.router)
+app.include_router(auth_users.router)
+app.include_router(orders.router)
 @app.get("/test")
 async def test():
     return {"testing":"done"}

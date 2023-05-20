@@ -9,7 +9,7 @@ def curso():
  try :
     conn = psycopg2.connect(
         host = 'host.docker.internal',
-        port=54323,
+        port=54321,
         database = config('POSTGRES_DB'),
         user = config('POSTGRES_USER'),
         password = config('POSTGRES_PASSWORD')

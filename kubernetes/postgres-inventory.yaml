@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: postgres-configs
+  name: postgres-inventory-configs
 data:
   POSTGRES_HOST: 'postgres'
-  POSTGRES_PORT: '54322'
+  POSTGRES_PORT: '54323'
 ---  
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: postgres-users-storage
+  name: postgres-inventory-storage
 
   labels:
     type: local
@@ -21,12 +21,12 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   hostPath:
-    path: '/mnt/users'
+    path: '/mnt/inventory'
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: postgres-users-storage-claim
+  name: postgres-inventory-storage-claim
 spec:
   storageClassName: manual
   accessModes:
@@ -39,43 +39,43 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: postgres-users
+  name: postgres-inventory
   # namespace: backstage
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: postgres-users
+      app: postgres-inventory
   template:
     metadata:
       labels:
-        app: postgres-users
+        app: postgres-inventory
     spec:
       containers:
-        - name: postgres-users
+        - name: postgres-inventory
           image: postgres:13.2-alpine
           imagePullPolicy: 'IfNotPresent'
           ports:
-            - containerPort: 54322
+            - containerPort: 54323
           envFrom:
             - secretRef:
-                name: postgres-secrets
+                name: all-secret
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
-              name: postgresdb-users
+              name: postgresdb-inventory
       volumes:
-        - name: postgresdb-users
+        - name: postgresdb-inventory
           persistentVolumeClaim:
-            claimName: postgres-users-storage-claim
+            claimName: postgres-inventory-storage-claim
 
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres-users
+  name: postgres-inventory
 spec:
   selector:
-    app: postgres-users
+    app: postgres-inventory
   ports:
-    - port: 54322
+    - port: 54323

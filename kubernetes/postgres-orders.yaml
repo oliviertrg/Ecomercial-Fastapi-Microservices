@@ -59,7 +59,7 @@ spec:
             - containerPort: 54321
           envFrom:
             - secretRef:
-                name: all-secret
+                name: all-secret-2 
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
               name: postgresdb-orders-db

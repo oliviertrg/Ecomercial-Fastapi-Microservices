@@ -15,7 +15,7 @@ es = es()
 
 
 @router.get('/views/query=*')
-async def view_all(current_user : int = Depends(auth2_admin.get_current_user)):
+async def view_all(current_user : int ):
   try:
     r = list()
     ree = es.search(index="grocery_store", query={"match_all": {}})
@@ -31,7 +31,7 @@ async def view_all(current_user : int = Depends(auth2_admin.get_current_user)):
   return r
 
 @router.get('/views/query={search_query}')
-async def view(search_query : str,current_user : int = Depends(auth2_admin.get_current_user)):
+async def view(search_query : str,current_user : int ):
   try:
     r = list()
     ree = es.search(index="grocery_store",query={"multi_match": {"query": search_query,

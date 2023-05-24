@@ -8,7 +8,7 @@ class users(BaseModel):
     email : EmailStr
     password : str
     is_actice : bool = True
-    is_staff : bool  = False
+
 
 class login(BaseModel):
     email : EmailStr
@@ -25,6 +25,34 @@ class update_users(BaseModel):
     username : str
     email : str
     is_staff : bool
+
+class Order(BaseModel):
+    pizza_size : str
+    flavour : str
+    quantity : int
+    orders_status : str = "pending"
+
+class add(BaseModel):
+    id_customer : str
+    orders_id : str
+    item_id : str
+    item_name : str
+    units_sold : int = 1
+    unit_price : float
+    total_prices : float
+    orders_status : str = "pending"
+
+# 	id_customer varchar(50) NOT NULL,
+# 	orders_id varchar(50) NOT NULL,
+# 	item_id varchar(50) NOT NULL,
+# 	item_name varchar(300) NOT NULL,
+# 	units_sold int4 NOT NULL,
+# 	unit_price numeric(10) NOT NULL,
+# 	total_prices numeric(10) NOT NULL,
+# 	orders_status varchar(50) NULL DEFAULT NULL::character varying,
+# 	create_at timestamptz NULL DEFAULT CURRENT_TIMESTAMP
+# );
+
 # class update_order(BaseModel):
 #     pizza_size: str
 #     flavour: str
@@ -38,11 +66,7 @@ class update_users(BaseModel):
 #     flavour: str
 #     create_at : str
 
-# class Order(BaseModel):
-#     pizza_size : str
-#     flavour : str
-#     quantity : int
-#     orders_status : str = "pending"
+
 
 # class update_order(Order):
 #     pass

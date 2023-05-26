@@ -33,14 +33,12 @@ class Order(BaseModel):
     orders_status : str = "pending"
 
 class add(BaseModel):
-    id_customer : str
-    orders_id : str
     item_id : str
     item_name : str
     units_sold : int = 1
     unit_price : float
     total_prices : float
-    orders_status : str = "pending"
+    orders_status : str = "unpaid"
 
 # 	id_customer varchar(50) NOT NULL,
 # 	orders_id varchar(50) NOT NULL,

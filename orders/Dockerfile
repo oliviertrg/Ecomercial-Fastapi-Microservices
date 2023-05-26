@@ -2,7 +2,7 @@ FROM python:3.10-slim
 # set the working directory
 WORKDIR /work
 
-EXPOSE 9100
+EXPOSE 6969
 # install dependencies
 COPY ./requirements.txt ./
 RUN pip install --no-cache-dir --upgrade -r requirements.txt

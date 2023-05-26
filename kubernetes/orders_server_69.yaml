@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-server-deployment
+  labels:
+    app: orders-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orders-server
+  template:
+    metadata:
+      labels:
+        app: orders-server
+    spec:
+      containers:
+      - name: orders-server-69
+        image: rioverrain/orders_server_6969:latest
+        ports:
+          - containerPort: 6969
+            name: http
+            protocol: TCP
+        env :
+         - name: POSTGRES_DB
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: POSTGRES_DB
+         - name: POSTGRES_USER
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: POSTGRES_USER
+         - name: POSTGRES_PASSWORD
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: POSTGRES_PASSWORD
+         - name: SECRET_KEY
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: SECRET_KEY   
+         - name: SECRET_KEY_USERS
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: SECRET_KEY_USERS        
+         - name: ALGORITHM
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: ALGORITHM   
+         - name: ACCESS_TOKEN_EXPIRE_MINUTES
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: ACCESS_TOKEN_EXPIRE_MINUTES
+         - name: ELASTIC_USER
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: ELASTIC_USER        
+         - name: ELASTIC_PASSWORD
+           valueFrom:
+            secretKeyRef:
+               name: postgres-secret
+               key: ELASTIC_PASSWORD         
+      
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: orders-server-service
+spec:
+  selector:
+    app: orders-server
+  ports:
+    - port: 6969
+    
+

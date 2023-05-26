@@ -17,9 +17,9 @@ c = db.cursor()
 def register(new_user : users):
   new_pass = hashpass(new_user.password)
   new_user.password = new_pass
-  x = (new_user.username,new_user.email,new_user.password,new_user.is_actice,new_user.is_staff)
-  sql = (""" insert into users(usersname,email,passwords,is_active,is_staff) 
-             values (%s,%s,%s,%s,%s) ; """)
+  x = (new_user.username,new_user.email,new_user.password,new_user.is_actice)
+  sql = (""" insert into users(usersname,email,passwords,is_active) 
+             values (%s,%s,%s,%s) ; """)
   c.execute(sql,x)
   db.commit()
   return {"username":new_user.username,

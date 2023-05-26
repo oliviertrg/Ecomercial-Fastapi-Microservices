@@ -57,8 +57,8 @@ def create_order(new_order : schema.add,current_user : int = Depends(auth2.get_c
 @router.post('/transactions/{order_id}')
 async def update_order_status(order_id : str,current_user : int = Depends(auth2.get_current_user)):
 
-    sql = f"""select * from "cart"
-              where "order_id" = '{order_id}' ; """
+    sql = f"""select * from cart
+              where orders_id = '{order_id}' ; """
     c.execute(sql)
     y = c.fetchall()
     # if len(y) == 0:

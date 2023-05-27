@@ -1,13 +1,14 @@
 from pydantic import BaseModel,EmailStr
 from typing import Optional
 from starlette.requests import Request
-
+from datetime import datetime
 
 class users(BaseModel):
     username : str
     email : EmailStr
     password : str
     is_actice : bool = True
+
 
 
 class login(BaseModel):
@@ -26,20 +27,29 @@ class update_users(BaseModel):
     email : str
     is_staff : bool
 
-class Order(BaseModel):
-    pizza_size : str
-    flavour : str
-    quantity : int
-    orders_status : str = "pending"
-
 class add(BaseModel):
     item_id : str
     item_name : str
     units_sold : int = 1
     unit_price : float
-    total_prices : float
+    total_prices : float = None
     orders_status : str = "unpaid"
+ 
+class new_transactions(BaseModel):
+    note : str = None
+    payment_methods : str
+    order_status : str = 'Processing'
 
+class receipt(BaseModel):
+        order_id : str
+        id_customer : str 
+        payment_methods : str
+        order_status : str = 'Processing'
+        order_date : datetime 
+        total_prices : float
+        note : str = None
+        
+    	
 # 	id_customer varchar(50) NOT NULL,
 # 	orders_id varchar(50) NOT NULL,
 # 	item_id varchar(50) NOT NULL,

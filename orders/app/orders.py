@@ -10,7 +10,6 @@ from app.config import curso
 import uuid
 import random
 import string
-
 router = APIRouter ()
 db = curso()
 c = db.cursor()
@@ -44,7 +43,7 @@ def create_order(new_order : schema.add,current_user : int = Depends(auth2.get_c
               values(%s,%s,%s,%s,%s,%s,%s,%s) ;
               '''
     x = (int(current_user.id),orders_id,new_order.item_id,new_order.item_name,new_order.units_sold,
-              new_order.unit_price,(new_order.unit_price*new_order.units_sold),new_order.orders_status)
+              new_order.unit_price,float(new_order.unit_price*new_order.units_sold),new_order.orders_status)
     c.execute(sql,x)
     db.commit()
  except Exception as e:
@@ -54,13 +53,33 @@ def create_order(new_order : schema.add,current_user : int = Depends(auth2.get_c
      
  return new_order
 
+# @router.post('/transactions/{order_id}',response_model = schema.receipt)
 @router.post('/transactions/{order_id}')
-async def update_order_status(order_id : str,current_user : int = Depends(auth2.get_current_user)):
+async def create_transactions(new_transactions : schema.new_transactions,order_id : str,current_user : int = Depends(auth2.get_current_user)):
 
-    sql = f"""select * from cart
-              where orders_id = '{order_id}' ; """
+    sql = f"""select sum(total_prices) from cart
+              where orders_id = '{order_id}'
+              group by orders_id ;"""
+    # sql = f"""select * from cart
+    #           where orders_id = '{order_id}'
+    #           ;"""
     c.execute(sql)
     y = c.fetchall()
+    print(y)
+    s = (order_id,int(current_user.id),new_transactions.payment_methods,
+         new_transactions.order_status,float(y[0][0]),new_transactions.note)
+    sqll = '''insert into cart(orders_id,id_customer,payment_methods,order_status,
+              total_prices,note)
+              values(%s,%s,%s,%s,%s,%s) ;
+              '''
+    c.execute(sqll,s)
+    db.commit()
+    schema.receipt(order_id=order_id,id_customer=int(current_user.id),
+                   payment_methods=new_transactions.payment_methods,
+                   order_date = datetime.now(),total_prices=float(y[0][0]),
+                   note = new_transactions.note)
+    return schema.receipt
+
     # if len(y) == 0:
     #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
     #                         detail=f"order with id: {order_id} does not exist")
@@ -93,7 +112,7 @@ async def update_order_status(order_id : str,current_user : int = Depends(auth2.
     #                           detail = f"{e}")
     #    print("body : ",body)
     #    print("d : ",d)  
-    return y
+    
 
 # @router.get('/views')
 # async def view_orders(current_user : int = Depends(auth2.get_current_user)):

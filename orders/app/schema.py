@@ -34,7 +34,7 @@ class add(BaseModel):
     unit_price : float
     total_prices : float = None
     orders_status : str = "unpaid"
- 
+    
 class new_transactions(BaseModel):
     note : str = None
     payment_methods : str

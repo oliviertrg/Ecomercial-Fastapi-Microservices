@@ -21,8 +21,7 @@ def create_order(new_order : schema.add,current_user : int = Depends(auth2.get_c
 
     c.execute(sql)
     check = c.fetchall()
-    print(check)
-    if len(check) == 0 :  
+    if len(check) == 0 or check[0][1] == 'paid':  
         a = True
         while  a :
             u = uuid.uuid1()
@@ -36,14 +35,18 @@ def create_order(new_order : schema.add,current_user : int = Depends(auth2.get_c
 
     elif check[0][1] == 'unpaid' :
        orders_id  = check[0][0]            
-
+    
      # not create customer id yet
     sql = '''insert into cart(id_customer,orders_id,item_id,item_name,units_sold,
               unit_price,total_prices,orders_status)
               values(%s,%s,%s,%s,%s,%s,%s,%s) ;
               '''
+    new_order.total_prices=float(new_order.unit_price*new_order.units_sold)
+    print(new_order.total_prices)
     x = (int(current_user.id),orders_id,new_order.item_id,new_order.item_name,new_order.units_sold,
-              new_order.unit_price,float(new_order.unit_price*new_order.units_sold),new_order.orders_status)
+              new_order.unit_price,new_order.total_prices,new_order.orders_status)
+    print(x)
+    print(orders_id)
     c.execute(sql,x)
     db.commit()
  except Exception as e:
@@ -53,32 +56,38 @@ def create_order(new_order : schema.add,current_user : int = Depends(auth2.get_c
      
  return new_order
 
+
 # @router.post('/transactions/{order_id}',response_model = schema.receipt)
 @router.post('/transactions/{order_id}')
 async def create_transactions(new_transactions : schema.new_transactions,order_id : str,current_user : int = Depends(auth2.get_current_user)):
-
+   try:
     sql = f"""select sum(total_prices) from cart
               where orders_id = '{order_id}'
               group by orders_id ;"""
-    # sql = f"""select * from cart
-    #           where orders_id = '{order_id}'
-    #           ;"""
     c.execute(sql)
     y = c.fetchall()
-    print(y)
     s = (order_id,int(current_user.id),new_transactions.payment_methods,
          new_transactions.order_status,float(y[0][0]),new_transactions.note)
-    sqll = '''insert into cart(orders_id,id_customer,payment_methods,order_status,
+    sqll = '''insert into transactions(orders_id,id_customer,payment_methods,order_status,
               total_prices,note)
               values(%s,%s,%s,%s,%s,%s) ;
               '''
     c.execute(sqll,s)
     db.commit()
-    schema.receipt(order_id=order_id,id_customer=int(current_user.id),
-                   payment_methods=new_transactions.payment_methods,
-                   order_date = datetime.now(),total_prices=float(y[0][0]),
-                   note = new_transactions.note)
-    return schema.receipt
+    
+    
+   except Exception as e:
+     print(f"Error {e}")
+     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                         detail=f"{e}") 
+   return schema.receipt(
+                   order_id=order_id,
+                   id_customer=str(current_user.id),
+                   payment_methods=str(new_transactions.payment_methods),
+                   order_date = datetime.now(),
+                   total_prices=float(y[0][0]),
+                   note = str(new_transactions.note)
+                   )
 
     # if len(y) == 0:
     #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,

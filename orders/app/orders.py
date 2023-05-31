@@ -11,10 +11,11 @@ import uuid
 import random
 import string
 router = APIRouter ()
-db = curso()
-c = db.cursor()
+
 @router.post('/cart/',status_code=status.HTTP_201_CREATED)
 def create_order(new_order : schema.add,current_user : int = Depends(auth2.get_current_user)):
+ db = curso()
+ c = db.cursor()
  try:
     sql = f'''select orders_id,orders_status from cart where id_customer = '{int(current_user.id)}'
               order by create_at desc limit 1 ''' 
@@ -37,16 +38,15 @@ def create_order(new_order : schema.add,current_user : int = Depends(auth2.get_c
        orders_id  = check[0][0]            
     
      # not create customer id yet
+    new_order.orders_id = orders_id
+    new_order.total_prices=float(new_order.unit_price*new_order.units_sold) 
+    
     sql = '''insert into cart(id_customer,orders_id,item_id,item_name,units_sold,
               unit_price,total_prices,orders_status)
               values(%s,%s,%s,%s,%s,%s,%s,%s) ;
               '''
-    new_order.total_prices=float(new_order.unit_price*new_order.units_sold)
-    print(new_order.total_prices)
     x = (int(current_user.id),orders_id,new_order.item_id,new_order.item_name,new_order.units_sold,
               new_order.unit_price,new_order.total_prices,new_order.orders_status)
-    print(x)
-    print(orders_id)
     c.execute(sql,x)
     db.commit()
  except Exception as e:
@@ -56,12 +56,41 @@ def create_order(new_order : schema.add,current_user : int = Depends(auth2.get_c
      
  return new_order
 
+@router.delete('/delete-items/{order_id}',status_code=status.HTTP_204_NO_CONTENT)
+async def delete_order(order_id : int,item_id : int,current_user : int = Depends(auth2.get_current_user)):
+   db = curso()
+   c = db.cursor()
+   try: 
+    sql = f"""select * from "cart" where "orders_id" = '{order_id}' ; """
+    c.execute(sql)
+    x = c.fetchall()
+    if len(x) == 0 :
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"order with id: {order_id} does not exist")
+    if x[0][1] != int(current_user.id) :
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Not authorized to perform requested action")
+    else:
+        sql1 = f"""delete from "cart" where "orders_id" = '{order_id}'  
+                                      and "item_id" = '{item_id}' ;"""
+        c.execute(sql1)
+        db.commit()
+   except Exception as e:
+     print(f"Error {e}")
+     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                         detail=f"{e}")    
+
 
 # @router.post('/transactions/{order_id}',response_model = schema.receipt)
 @router.post('/transactions/{order_id}')
 async def create_transactions(new_transactions : schema.new_transactions,order_id : str,current_user : int = Depends(auth2.get_current_user)):
+   db = curso()
+   c = db.cursor()
    try:
-    sql = f"""select sum(total_prices) from cart
+    sql = f"""update cart set orders_status = 'paid'
+              where orders_id = '{order_id}';
+
+              select sum(total_prices) from cart
               where orders_id = '{order_id}'
               group by orders_id ;"""
     c.execute(sql)
@@ -74,21 +103,41 @@ async def create_transactions(new_transactions : schema.new_transactions,order_i
               '''
     c.execute(sqll,s)
     db.commit()
-    
+    new_transactions.order_id=order_id[0],
+    new_transactions.id_customer=str(current_user.id)
+    new_transactions.order_date = datetime.now()
+    new_transactions.total_prices=float(y[0][0])
+
     
    except Exception as e:
      print(f"Error {e}")
      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                          detail=f"{e}") 
-   return schema.receipt(
-                   order_id=order_id,
-                   id_customer=str(current_user.id),
-                   payment_methods=str(new_transactions.payment_methods),
-                   order_date = datetime.now(),
-                   total_prices=float(y[0][0]),
-                   note = str(new_transactions.note)
-                   )
+   return new_transactions
 
+@router.delete('/delete-orders/{order_id}',status_code=status.HTTP_204_NO_CONTENT)
+async def delete_order(order_id : int,current_user : int = Depends(auth2.get_current_user)):
+   db = curso()
+   c = db.cursor()
+   try: 
+    sql = f"""select * from "transactions" where "orders_id" = '{order_id}' ; """
+    c.execute(sql)
+    x = c.fetchall()
+    if len(x) == 0 :
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"order with id: {order_id} does not exist")
+    if x[0][0] != int(current_user.id) :
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Not authorized to perform requested action")
+    else:
+        sql1 = f"""delete from "transactions" where "orders_id" = '{order_id}' ;"""
+        c.execute(sql1)
+        db.commit()
+   except Exception as e:
+     print(f"Error {e}")
+     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                         detail=f"{e}")    
+    
     # if len(y) == 0:
     #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
     #                         detail=f"order with id: {order_id} does not exist")

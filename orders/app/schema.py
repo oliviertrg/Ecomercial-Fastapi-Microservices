@@ -28,6 +28,7 @@ class update_users(BaseModel):
     is_staff : bool
 
 class add(BaseModel):
+    orders_id : str = None
     item_id : str
     item_name : str
     units_sold : int = 1
@@ -39,15 +40,13 @@ class new_transactions(BaseModel):
     note : str = None
     payment_methods : str
     order_status : str = 'Processing'
-
-class receipt(BaseModel):
-        order_id : str
-        id_customer : str 
-        payment_methods : str
-        order_status : str = 'Processing'
-        order_date : datetime 
-        total_prices : float
-        note : str = None
+    order_id : str = None
+    id_customer : str = None
+    payment_methods : str = None
+    order_status : str = 'Processing'
+    order_date : datetime = None
+    total_prices : float =None
+    note : str = None
         
     	
 # 	id_customer varchar(50) NOT NULL,

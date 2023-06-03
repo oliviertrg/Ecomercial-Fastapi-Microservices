@@ -30,7 +30,7 @@ def get_current_user(token : str = Depends(oath2_schema)):
 def verify_access_token(token : str,credentials_exception) :
     try :
         payload = jwt.decode(token,SECRET_KEY,algorithms=ALGORITHM)
-        user_id : str = payload.get("user_id")
+        user_id : str = payload.get("admins_id")
         if user_id is None :
             raise credentials_exception
         token_data = schema.tokendata(id = user_id)

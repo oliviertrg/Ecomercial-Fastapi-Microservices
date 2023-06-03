@@ -8,7 +8,6 @@ class users(BaseModel):
     email : EmailStr
     password : str
     is_actice : bool = True
-    is_staff : bool  = False
 
 class login(BaseModel):
     email : EmailStr

@@ -25,47 +25,42 @@ spec:
          - name: POSTGRES_DB
            valueFrom:
             secretKeyRef:
-               name: postgres-secret
+               name: all-secret
                key: POSTGRES_DB
          - name: POSTGRES_USER
            valueFrom:
             secretKeyRef:
-               name: postgres-secret
+               name: all-secret
                key: POSTGRES_USER
          - name: POSTGRES_PASSWORD
            valueFrom:
             secretKeyRef:
-               name: postgres-secret
+               name: all-secret
                key: POSTGRES_PASSWORD
-         - name: SECRET_KEY
-           valueFrom:
-            secretKeyRef:
-               name: postgres-secret
-               key: SECRET_KEY   
          - name: SECRET_KEY_USERS
            valueFrom:
             secretKeyRef:
-               name: postgres-secret
+               name: all-secret
                key: SECRET_KEY_USERS        
          - name: ALGORITHM
            valueFrom:
             secretKeyRef:
-               name: postgres-secret
+               name: all-secret
                key: ALGORITHM   
          - name: ACCESS_TOKEN_EXPIRE_MINUTES
            valueFrom:
             secretKeyRef:
-               name: postgres-secret
+               name: all-secret
                key: ACCESS_TOKEN_EXPIRE_MINUTES
          - name: ELASTIC_USER
            valueFrom:
             secretKeyRef:
-               name: postgres-secret
+               name: all-secret
                key: ELASTIC_USER        
          - name: ELASTIC_PASSWORD
            valueFrom:
             secretKeyRef:
-               name: postgres-secret
+               name: all-secret
                key: ELASTIC_PASSWORD         
       
 

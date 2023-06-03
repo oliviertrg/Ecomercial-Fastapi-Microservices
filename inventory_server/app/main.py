@@ -1,9 +1,8 @@
 from fastapi import FastAPI , status ,HTTPException,APIRouter
-from app import auth,warehouse,auth
+from app import auth,warehouse,admin
 from fastapi.middleware.cors import  CORSMiddleware
 from starlette.requests import Request
 
-from warehouse_server.app import admin
 
 
 

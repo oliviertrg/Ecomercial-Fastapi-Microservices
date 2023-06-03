@@ -15,7 +15,7 @@ es = es()
 
 
 @router.get('/views/query=*')
-async def view_all(current_user : int ):
+async def view_all():
   try:
     r = list()
     ree = es.search(index="grocery_store", query={"match_all": {}})
@@ -23,7 +23,10 @@ async def view_all(current_user : int ):
       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                          detail="CAN'T FIND ANY PRODUCTS ")
     for i in ree['hits']['hits']:
-     r.append(i["_source"]) 
+       c = i['_source']
+       c.update({"id":i['_id']})
+       r.append(c) 
+     
   except Exception as e:
      print(f"Error {e}")
      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -31,7 +34,7 @@ async def view_all(current_user : int ):
   return r
 
 @router.get('/views/query={search_query}')
-async def view(search_query : str,current_user : int ):
+async def view(search_query : str):
   try:
     r = list()
     ree = es.search(index="grocery_store",query={"multi_match": {"query": search_query,
@@ -40,7 +43,9 @@ async def view(search_query : str,current_user : int ):
       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                          detail="CAN'T FIND ANY PRODUCTS ")
     for i in ree['hits']['hits']:
-     r.append(i["_source"]) 
+       c = i['_source']
+       c.update({"id":i['_id']})
+       r.append(c) 
   except Exception as e:
      print(f"Error {e}")
      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
@@ -55,7 +60,6 @@ async def import_merchandise(request: Request,current_user : int = Depends(auth2
      user = {"users_id_who_created" : int(current_user.id),
              'timestamp': datetime.now()}
      body.update(user)
-     print(body)
      resp = es.index(index="grocery_store", document=body)
      
  except Exception as e:

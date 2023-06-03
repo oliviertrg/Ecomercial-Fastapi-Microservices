@@ -11,7 +11,33 @@ import uuid
 import random
 import string
 router = APIRouter ()
-
+# @router.get('/query=*')
+# async def view_all():
+#   try:
+#     r = list()
+#     ree = es.search(index="grocery_store", query={"match_all": {}})
+#     if len(ree['hits']['hits']) == 0 :
+#       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+#                          detail="CAN'T FIND ANY PRODUCTS ")
+#     for i in ree['hits']['hits']:
+#      r.append(i["_source"]) 
+#   except Exception as e:
+#      print(f"Error {e}")
+#      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+#                          detail="CAN'T FIND ANY PRODUCTS ")
+#   return r
+@router.get('/query={search_query}')
+async def view(search_query : str):
+  try:
+    req = requests.get(f'http://host.docker.internal:9100/merchandise/views/query={search_query}')
+    d = (json.dumps(req.json()).encode("utf-8"))
+    j = (req.json())
+  except Exception as e:
+     print(f"Error {e}")
+     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                         detail="CAN'T FIND ANY PRODUCTS ")
+   
+  return j
 @router.post('/cart/',status_code=status.HTTP_201_CREATED)
 def create_order(new_order : schema.add,current_user : int = Depends(auth2.get_current_user)):
  db = curso()

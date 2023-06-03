@@ -22,22 +22,6 @@ def curso():
     print(f"Error {e}" )
  return conn
 
-def curso():
- try :
-    conn = psycopg2.connect(
-        host = 'host.docker.internal',
-        port=54323,
-        database = config('POSTGRES_DB'),
-        user = config('POSTGRES_USER'),
-        password = config('POSTGRES_PASSWORD')
-    )
-    print("conecting susseccefull")
-
- except Exception as e :
-    print("-"*200)
-    print("Connecting to database failed")
-    print(f"Error {e}" )
- return conn
 
 def es():
  try :

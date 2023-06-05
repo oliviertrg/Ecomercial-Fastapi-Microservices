@@ -1,7 +1,7 @@
 from pydantic import BaseModel,EmailStr
 from typing import Optional
 from starlette.requests import Request
-
+from datetime import datetime
 
 class users(BaseModel):
     username : str
@@ -24,6 +24,16 @@ class update_users(BaseModel):
     username : str
     email : str
     is_staff : bool
+
+# class new_transactions(BaseModel):
+#     note : str 
+#     payment_methods : str
+#     order_id : str 
+#     id_customer : str 
+#     order_status : str = 'Processing'
+#     order_date : datetime = None
+#     total_prices : float 
+    
 # class update_order(BaseModel):
 #     pizza_size: str
 #     flavour: str

@@ -37,16 +37,13 @@ class add(BaseModel):
     orders_status : str = "unpaid"
     
 class new_transactions(BaseModel):
-    note : str = None
-    payment_methods : str
-    order_status : str = 'Processing'
     order_id : str = None
     id_customer : str = None
-    payment_methods : str = None
+    payment_methods : str 
     order_status : str = 'Processing'
     order_date : datetime = None
-    total_prices : float =None
-    note : str = None
+    total_prices : float = None
+    note : str 
         
     	
 # 	id_customer varchar(50) NOT NULL,

@@ -12,8 +12,6 @@ router = APIRouter (
 )
 
 es = es()
-
-
 @router.get('/views/query=*')
 async def view_all():
   try:

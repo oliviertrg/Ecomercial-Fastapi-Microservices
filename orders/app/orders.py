@@ -10,22 +10,18 @@ from app.config import curso
 import uuid
 import random
 import string
+# from starlette.requests import Request
+
+
+from kafka import KafkaProducer
+
+
+ORDER_KAFKA_TOPIC = "transactions_details"
+
+producer = KafkaProducer(bootstrap_servers=['host.docker.internal:9300'],
+                         api_version=(0,11,5))
 router = APIRouter ()
-# @router.get('/query=*')
-# async def view_all():
-#   try:
-#     r = list()
-#     ree = es.search(index="grocery_store", query={"match_all": {}})
-#     if len(ree['hits']['hits']) == 0 :
-#       raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-#                          detail="CAN'T FIND ANY PRODUCTS ")
-#     for i in ree['hits']['hits']:
-#      r.append(i["_source"]) 
-#   except Exception as e:
-#      print(f"Error {e}")
-#      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-#                          detail="CAN'T FIND ANY PRODUCTS ")
-#   return r
+
 @router.get('/query={search_query}')
 async def view(search_query : str):
   try:
@@ -52,7 +48,7 @@ def create_order(new_order : schema.add,current_user : int = Depends(auth2.get_c
         a = True
         while  a :
             u = uuid.uuid1()
-            i = f'{str(u.hex)}'.join(random.sample(string.ascii_lowercase,4))  
+            i = f'{str(u.hex)}'.join(random.sample(string.ascii_lowercase,2))  
             sql = f"""select * from cart where orders_id = '{i}'"""
             c.execute(sql)
             z = c.fetchall()
@@ -62,8 +58,7 @@ def create_order(new_order : schema.add,current_user : int = Depends(auth2.get_c
 
     elif check[0][1] == 'unpaid' :
        orders_id  = check[0][0]            
-    
-     # not create customer id yet
+
     new_order.orders_id = orders_id
     new_order.total_prices=float(new_order.unit_price*new_order.units_sold) 
     
@@ -102,10 +97,6 @@ async def delete_order(item_id : int,current_user : int = Depends(auth2.get_curr
                                       and "item_id" = '{item_id}';"""
         c.execute(sql1)
         db.commit()
-
-
-
-# @router.post('/transactions/{order_id}',response_model = schema.receipt)
 @router.post('/transactions/{order_id}')
 async def create_transactions(new_transactions : schema.new_transactions,order_id : str,current_user : int = Depends(auth2.get_current_user)):
    db = curso()
@@ -119,48 +110,31 @@ async def create_transactions(new_transactions : schema.new_transactions,order_i
               group by orders_id ;"""
     c.execute(sql)
     y = c.fetchall()
-    s = (order_id,int(current_user.id),new_transactions.payment_methods,
-         new_transactions.order_status,float(y[0][0]),new_transactions.note)
-    sqll = '''insert into transactions(orders_id,id_customer,payment_methods,order_status,
-              total_prices,note)
-              values(%s,%s,%s,%s,%s,%s) ;
-              '''
-    c.execute(sqll,s)
-    db.commit()
+    body = {
+           "order_id" : order_id ,
+           "id_customer" : int(current_user.id) ,
+           "payment_methods" : new_transactions.payment_methods,
+           "order_status" :     new_transactions.order_status,
+           "total_prices" : float(y[0][0]) ,
+           "note" : new_transactions.note,
+        }  
+        
+    
+    d = (json.dumps(body.json()).encode("utf-8"))
+    producer.send(ORDER_KAFKA_TOPIC,d) 
+
     new_transactions.order_id=order_id
     new_transactions.id_customer=str(current_user.id)
     new_transactions.order_date = datetime.now()
     new_transactions.total_prices=float(y[0][0])
-    
    except Exception as e:
      print(f"Error {e}")
-     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                         detail=f"{e}") 
+     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                         detail="CAN'T FIND ANY PRODUCTS ")
    return new_transactions
 
-@router.delete('/delete-orders/{order_id}',status_code=status.HTTP_204_NO_CONTENT)
-async def delete_order(order_id : str,current_user : int = Depends(auth2.get_current_user)):
-    db = curso()
-    c = db.cursor()
-    sql = f"""select * from "transactions" where id_customer = '{int(current_user.id)}'
-                                          and"orders_id" = '{order_id}' 
-                                          and order_status = 'Processing' ; """
-    c.execute(sql)
-    x = c.fetchall()
 
-    if len(x) == 0 :
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f"order with id: {order_id} does not exist")
-    if x[0][1] != int(current_user.id) :
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Not authorized to perform requested action")
-    else:
-        sql1 = f"""delete from "transactions" where id_customer = '{int(current_user.id)}'
-                                          and"orders_id" = '{order_id}' 
-                                          and order_status = 'Processing';"""
-        c.execute(sql1)
-        db.commit()
-  
+
     
     # if len(y) == 0:
     #     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,

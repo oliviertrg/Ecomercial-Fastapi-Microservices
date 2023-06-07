@@ -15,18 +15,24 @@ import string
 
 from kafka import KafkaProducer
 
-
 ORDER_KAFKA_TOPIC = "transactions_details"
 
 producer = KafkaProducer(bootstrap_servers=['host.docker.internal:9300'],
                          api_version=(0,11,5))
+try:
+ import kafka
+ print("kafka version : " , kafka.__version__)
+except Exception as e:
+     print(f"Error {e}")
+  
+
 router = APIRouter ()
 
 @router.get('/query={search_query}')
 async def view(search_query : str):
   try:
     req = requests.get(f'http://host.docker.internal:9100/merchandise/views/query={search_query}')
-    d = (json.dumps(req.json()).encode("utf-8"))
+    # d = (json.dumps(req.json()).encode("utf-8"))
     j = (req.json())
   except Exception as e:
      print(f"Error {e}")
@@ -102,35 +108,45 @@ async def create_transactions(new_transactions : schema.new_transactions,order_i
    db = curso()
    c = db.cursor()
    try:
-    sql = f"""update cart set orders_status = 'paid'
-              where orders_id = '{order_id}';
-
-              select sum(total_prices) from cart
+    sql = f"""select sum(total_prices) from cart
               where orders_id = '{order_id}'
-              group by orders_id ;"""
+              group by orders_id ;
+              """
+    sql2 = f"""select distinct orders_status from cart where orders_id = '{order_id}' ;"""
     c.execute(sql)
     y = c.fetchall()
-    body = {
-           "order_id" : order_id ,
-           "id_customer" : int(current_user.id) ,
-           "payment_methods" : new_transactions.payment_methods,
-           "order_status" :     new_transactions.order_status,
-           "total_prices" : float(y[0][0]) ,
-           "note" : new_transactions.note,
-        }  
-        
-    
-    d = (json.dumps(body.json()).encode("utf-8"))
-    producer.send(ORDER_KAFKA_TOPIC,d) 
-
+    c.execute(sql2)
+    x = c.fetchall()
+    print(x)
+    if x[0][0] == 'unpaid':
+      
+      body = {
+            "order_id" : order_id ,
+            "id_customer" : int(current_user.id) ,
+            "payment_methods" : new_transactions.payment_methods,
+            "order_status" :     new_transactions.order_status,
+            "total_prices" : float(y[0][0]) ,
+            "note" : new_transactions.note,
+          }  
+          
+      d = (json.dumps(body).encode("utf-8"))
+      producer.send(ORDER_KAFKA_TOPIC,d)
+      sql3 = f""" update cart set orders_status = 'paid'
+              where orders_id = '{order_id}'; """
+      c.execute(sql3)
+      db.commit()
+    else: 
+      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail="Not authorized to perform requested action")
     new_transactions.order_id=order_id
     new_transactions.id_customer=str(current_user.id)
     new_transactions.order_date = datetime.now()
     new_transactions.total_prices=float(y[0][0])
+    
    except Exception as e:
      print(f"Error {e}")
-     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                         detail="CAN'T FIND ANY PRODUCTS ")
+     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Not authorized to perform requested action")
    return new_transactions
 
 

@@ -1,7 +1,8 @@
 from fastapi import FastAPI ,Response,status ,HTTPException,APIRouter,Depends, Request
-from app.config import es
+from app.config import es,curso
 from fastapi.encoders import jsonable_encoder
 from app import auth2_admin
+from app import schema
 import requests
 import json
 from datetime import datetime
@@ -53,13 +54,25 @@ async def view(search_query : str):
 
 @router.post('/import',status_code=status.HTTP_201_CREATED)
 async def import_merchandise(request: Request,current_user : int = Depends(auth2_admin.get_current_user)):
- try:
-     body = await request.json()
-     user = {"users_id_who_created" : int(current_user.id),
-             'timestamp': datetime.now()}
-     body.update(user)
-     resp = es.index(index="grocery_store", document=body)
-     
+ 
+ body = await request.json()
+ if "quantity" not in body :
+     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                         detail=f"IMPORT PRODUCTS SHOULD INCLUDE QUANTITY")
+ if "product" not in body :
+     raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                         detail=f"IMPORT PRODUCTS SHOULD INCLUDE PRODUCT")
+ try: 
+      db = curso()
+      c = db.cursor() 
+      user = {"users_id_who_created" : int(current_user.id),
+              'timestamp': datetime.now()}
+      body.update(user)
+      resp = es.index(index="grocery_store", document=body)
+      sql = """insert into inventory(item_id,item_name,quantity) values(%s,%s,%s) ; """
+      x = (resp['_id'],body["product"],int(body["quantity"]))
+      c.execute(sql,x)
+      db.commit()
  except Exception as e:
      print(f"Error {e}")
      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
@@ -74,11 +87,16 @@ async def import_merchandise(request: Request,current_user : int = Depends(auth2
 async def update_product(product_id : str,request: Request ,current_user : int = Depends(auth2_admin.get_current_user)):
     try:
      body = await request.json()
+     if "quantity" in body :
+       db = curso()
+       c = db.cursor()
+       sql = f""" update inventory set quantity = (quantity + {int(body["quantity"])})
+              where item_id = '{product_id}'; """
+       c.execute(sql)
+       db.commit()
      user = {"users_id_who_created" : int(current_user.id)}
      body.update(user)
-     print(body)
-     resp = es.index(index="grocery_store",id=product_id,document=body)
-
+     resp = es.update(index="grocery_store",id=product_id,doc=body)
     except Exception as ex:
      print(f"Error {ex}")
      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
@@ -92,7 +110,12 @@ async def update_product(product_id : str,request: Request ,current_user : int =
 @router.delete('/delete/{product_id}',status_code=status.HTTP_204_NO_CONTENT)
 async def delete_order(product_id : str,current_user : int = Depends(auth2_admin.get_current_user)):
   try:
+    db = curso()
+    c = db.cursor()
     resp = es.delete(index="grocery_store", id=product_id) 
+    sql =f"""delete from "inventory" where item_id = '{product_id}'"""
+    c.execute(sql)
+    db.commit()
   except Exception as e:
      print(f"Error {e}")
      raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,

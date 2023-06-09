@@ -117,36 +117,26 @@ async def create_transactions(new_transactions : schema.new_transactions,order_i
     y = c.fetchall()
     c.execute(sql2)
     x = c.fetchall()
-    print(x)
-    if x[0][0] == 'unpaid':
-      
-      body = {
-            "order_id" : order_id ,
-            "id_customer" : int(current_user.id) ,
-            "payment_methods" : new_transactions.payment_methods,
-            "order_status" :     new_transactions.order_status,
-            "total_prices" : float(y[0][0]) ,
-            "note" : new_transactions.note,
-          }  
-          
+    new_transactions.order_id=order_id
+    new_transactions.id_customer=str(current_user.id)
+    new_transactions.total_prices=float(y[0][0])
+   except Exception as e:
+     print(f"Error {e}")
+     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Not authorized to perform requested action")
+   if x[0][0] == 'unpaid':
+      body = new_transactions.dict()    
       d = (json.dumps(body).encode("utf-8"))
       producer.send(ORDER_KAFKA_TOPIC,d)
       sql3 = f""" update cart set orders_status = 'paid'
               where orders_id = '{order_id}'; """
       c.execute(sql3)
       db.commit()
-    else: 
-      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail="Not authorized to perform requested action")
-    new_transactions.order_id=order_id
-    new_transactions.id_customer=str(current_user.id)
-    new_transactions.order_date = datetime.now()
-    new_transactions.total_prices=float(y[0][0])
+   else:
+      raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail=f"YOUR ORDERS ({new_transactions.order_id}) ALREADY PAID SO YOU CANT DO IT AGAIN")   
+   new_transactions.order_date = datetime.now()
     
-   except Exception as e:
-     print(f"Error {e}")
-     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Not authorized to perform requested action")
    return new_transactions
 
 

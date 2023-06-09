@@ -28,6 +28,7 @@ def event_driver():
               '''
       c.execute(sqll,s)
       db.commit()
+      print(f"this is orders : {b['order_id']} was send ")
   except Exception as e:
       print(f"Error {e}")  
 

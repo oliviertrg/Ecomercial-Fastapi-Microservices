@@ -25,6 +25,15 @@ class update_users(BaseModel):
     email : str
     is_staff : bool
 
+# class new_product(BaseModel):
+#     product : str
+#     type : str
+#     quantity : int 
+
+# class update_products(BaseModel):
+#     product : str
+#     type : str
+#     quantity : int    
 # class new_transactions(BaseModel):
 #     note : str 
 #     payment_methods : str

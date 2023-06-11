@@ -41,7 +41,12 @@ spec:
            valueFrom:
             secretKeyRef:
                name: all-secret
-               key: SECRET_KEY_USERS        
+               key: SECRET_KEY_USERS
+         - name: SECRET_KEY
+           valueFrom:
+            secretKeyRef:
+               name: all-secret
+               key: SECRET_KEY              
          - name: ALGORITHM
            valueFrom:
             secretKeyRef:

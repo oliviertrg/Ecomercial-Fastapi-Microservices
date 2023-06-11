@@ -1,5 +1,5 @@
 from fastapi import FastAPI , status ,HTTPException,APIRouter
-from app import auth,warehouse,admin
+from app import auth,warehouse,admin,transactions
 from fastapi.middleware.cors import  CORSMiddleware
 from starlette.requests import Request
 
@@ -17,7 +17,7 @@ app.add_middleware(
     allow_methods = ["*"] ,
     allow_headers = ["*"]
 )
-
+app.include_router(transactions.router)
 app.include_router(admin.router)
 app.include_router(auth.router)
 app.include_router(warehouse.router)

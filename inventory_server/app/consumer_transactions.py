@@ -4,7 +4,7 @@ from config import curso
 
 ORDER_KAFKA_TOPIC = "transactions_details"
 
-ORDER_CONFIRMED_KAFKA_TOPIC = "ingredient_confirmed"
+ORDER_CONFIRMED_KAFKA_TOPIC = "transactions_confirmed"
 
 
 consumer = KafkaConsumer(
@@ -13,7 +13,7 @@ consumer = KafkaConsumer(
                         api_version=(0,11,5)
                         )
 
-def event_driver():
+def kafka_queue():
   print("sending ","="*200,">>>>>>>>>>>>>>>>>>>>>>")
   try: 
     db = curso()
@@ -28,9 +28,9 @@ def event_driver():
               '''
       c.execute(sqll,s)
       db.commit()
-      print(f"this is orders : {b['order_id']} was send ")
+      print(f"this is orders : {b['order_id']} was send ","="*50,">>>>>>")
   except Exception as e:
       print(f"Error {e}")  
 
 if __name__ == "__main__":
-  event_driver()
+  kafka_queue()

@@ -1,15 +1,33 @@
 from fastapi import FastAPI ,Response,status ,HTTPException,APIRouter,Depends, Request
 from app.config import curso
-from fastapi.encoders import jsonable_encoder
-from app import auth2_admin,schema 
+# from fastapi.encoders import jsonable_encoder
+from app import auth2_admin,schema ,auth2
 import requests
 import json
 from datetime import datetime
-
+from fastapi.middleware.cors import  CORSMiddleware
 router = APIRouter (
-    prefix = "/transactions/",
+    prefix = "/transactions",
     tags = ["transactions"]
 )
+
+
+
+@router.get('/views/id_customer={id_customer}')
+async def view_all(id_customer : int,current_admin : int = Depends(auth2_admin.get_current_user,auth2.get_current_user)):
+  try:
+    print(id_customer)
+    db = curso()
+    c = db.cursor()
+    sql = f"""select * from transactions where id_customer = {id_customer}"""
+    c.execute(sql)
+    z = c.fetchall()
+    print(z)
+  except Exception as e:
+     print(f"Error {e}")
+    #  raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+    #                      detail="CAN'T FIND ANY PRODUCTS ")
+  return z
 
 @router.get('/views/query=?{orders_id}')
 async def view_all(orders_id : str ):
@@ -50,10 +68,10 @@ async def view_all(orders_id : str ):
 #    return new_transactions
 
 @router.delete('/delete-orders/{order_id}',status_code=status.HTTP_204_NO_CONTENT)
-async def delete_order(order_id : str,current_user : int = Depends(auth2_admin.get_current_user)):
+async def delete_order(order_id : str,current_admin : int = Depends(auth2_admin.get_current_user)):
     db = curso()
     c = db.cursor()
-    sql = f"""select * from "transactions" where id_customer = '{int(current_user.id)}'
+    sql = f"""select * from "transactions" where id_customer = '{int(current_admin.id)}'
                                           and"orders_id" = '{order_id}' 
                                           and order_status = 'Processing' ; """
     c.execute(sql)
@@ -66,7 +84,7 @@ async def delete_order(order_id : str,current_user : int = Depends(auth2_admin.g
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Not authorized to perform requested action")
     else:
-        sql1 = f"""delete from "transactions" where id_customer = '{int(current_user.id)}'
+        sql1 = f"""delete from "transactions" where id_customer = '{int(current_admin.id)}'
                                           and"orders_id" = '{order_id}' 
                                           and order_status = 'Processing';"""
         c.execute(sql1)

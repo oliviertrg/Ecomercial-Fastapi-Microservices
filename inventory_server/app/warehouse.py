@@ -53,7 +53,7 @@ async def view(search_query : str):
 
 
 @router.post('/import',status_code=status.HTTP_201_CREATED)
-async def import_merchandise(request: Request,current_user : int = Depends(auth2_admin.get_current_user)):
+async def import_merchandise(request: Request,current_admin : int = Depends(auth2_admin.get_current_user)):
  
  body = await request.json()
  if "quantity" not in body :
@@ -65,7 +65,7 @@ async def import_merchandise(request: Request,current_user : int = Depends(auth2
  try: 
       db = curso()
       c = db.cursor() 
-      user = {"users_id_who_created" : int(current_user.id),
+      user = {"users_id_who_created" : int(current_admin.id),
               'timestamp': datetime.now()}
       body.update(user)
       resp = es.index(index="grocery_store", document=body)
@@ -78,13 +78,15 @@ async def import_merchandise(request: Request,current_user : int = Depends(auth2
      raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                          detail=f"{e}")
      
- return {"id_product":resp['_id'],
-         "status":resp['result']}
+ return {
+         "id_product":resp['_id'],
+         "status":resp['result']
+         }
 
 
 
 @router.put('/update_products/{product_id}',status_code=status.HTTP_200_OK)
-async def update_product(product_id : str,request: Request ,current_user : int = Depends(auth2_admin.get_current_user)):
+async def update_product(product_id : str,request: Request ,current_admin : int = Depends(auth2_admin.get_current_user)):
     try:
      body = await request.json()
      if "quantity" in body :
@@ -94,7 +96,7 @@ async def update_product(product_id : str,request: Request ,current_user : int =
               where item_id = '{product_id}'; """
        c.execute(sql)
        db.commit()
-     user = {"users_id_who_created" : int(current_user.id)}
+     user = {"users_id_who_created" : int(current_admin.id)}
      body.update(user)
      resp = es.update(index="grocery_store",id=product_id,doc=body)
     except Exception as ex:
@@ -108,7 +110,7 @@ async def update_product(product_id : str,request: Request ,current_user : int =
             }
 
 @router.delete('/delete/{product_id}',status_code=status.HTTP_204_NO_CONTENT)
-async def delete_order(product_id : str,current_user : int = Depends(auth2_admin.get_current_user)):
+async def delete_order(product_id : str,current_admin : int = Depends(auth2_admin.get_current_user)):
   try:
     db = curso()
     c = db.cursor()

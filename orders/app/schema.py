@@ -17,7 +17,6 @@ class login(BaseModel):
     
 class tokendata(BaseModel):
     id : Optional[str] = None
-
 class token(BaseModel) :
     access_token : str
     token_type : str

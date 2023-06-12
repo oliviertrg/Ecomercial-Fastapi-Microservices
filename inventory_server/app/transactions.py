@@ -1,4 +1,4 @@
-from fastapi import FastAPI ,Response,status ,HTTPException,APIRouter,Depends, Request
+from fastapi import FastAPI,Request ,Response,status ,HTTPException,APIRouter,Depends, Request
 from app.config import curso
 # from fastapi.encoders import jsonable_encoder
 from app import auth2_admin,schema ,auth2
@@ -11,12 +11,24 @@ router = APIRouter (
     tags = ["transactions"]
 )
 
-
+# @router.get("/items/{item_id}")
+# def read_root(item_id: str, request: Request):
+#     client_host = request.client.host
+#     return {"client_host": client_host, "item_id": item_id}
 
 @router.get('/views/id_customer={id_customer}')
-async def view_all(id_customer : int,current_admin : int = Depends(auth2_admin.get_current_user,auth2.get_current_user)):
+async def view_all(id_customer : int,request: Request):
   try:
-    print(id_customer)
+    a = [request.url,
+    request._url,
+    request._get_form,
+    request.base_url]
+    print(a)
+    client_host = request.client.host
+    client_port = request.client.port
+    j = {"client_host": client_host,
+         "client_port": client_port}
+    print(j)
     db = curso()
     c = db.cursor()
     sql = f"""select * from transactions where id_customer = {id_customer}"""

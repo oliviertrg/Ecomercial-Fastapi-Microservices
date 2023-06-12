@@ -37,13 +37,18 @@ async def view(search_query : str):
   return j
 
 @router.get('/history/')
-async def historys(current_user : int = Depends(auth2.get_current_user)):
-  try:
-    token = {"access_token":current_user.access_token,
-             "token_type" : current_user.token_type}
-    print(token)
-    auth = OAuth2(token=token)
-    req = requests.get(f'http://host.docker.internal:9100/transactions/views/id_customer={current_user.id}',auth=auth)
+async def historys(request: Request,current_user : int = Depends(auth2.get_current_user)):
+  try: 
+    a = [request.url,
+    request._url,
+    request._get_form,
+    request.base_url]
+    print(a)
+    client_host = request.client.host
+    client_port = request.client.port
+    j = {"client_host": client_host,
+         "client_port": client_port}
+    req = requests.get(f'http://host.docker.internal:9100/transactions/views/id_customer={current_user.id}',auth=None)
     # d = (json.dumps(req.json()).encode("utf-8"))
     j = (req.json())
   except Exception as e:

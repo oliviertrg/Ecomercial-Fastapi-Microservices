@@ -11,38 +11,22 @@ router = APIRouter (
     tags = ["transactions"]
 )
 
-# @router.get("/items/{item_id}")
-# def read_root(item_id: str, request: Request):
-#     client_host = request.client.host
-#     return {"client_host": client_host, "item_id": item_id}
-
 @router.get('/views/id_customer={id_customer}')
-async def view_all(id_customer : int,request: Request):
+async def view_all(id_customer : int,current_users : int = (Depends(auth2.get_current_user),Depends(auth2_admin.get_current_user))):
   try:
-    a = [request.url,
-    request._url,
-    request._get_form,
-    request.base_url]
-    print(a)
-    client_host = request.client.host
-    client_port = request.client.port
-    j = {"client_host": client_host,
-         "client_port": client_port}
-    print(j)
     db = curso()
     c = db.cursor()
     sql = f"""select * from transactions where id_customer = {id_customer}"""
     c.execute(sql)
     z = c.fetchall()
-    print(z)
   except Exception as e:
      print(f"Error {e}")
-    #  raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-    #                      detail="CAN'T FIND ANY PRODUCTS ")
+     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                         detail="CAN'T FIND ANY PRODUCTS ")
   return z
 
-@router.get('/views/query=?{orders_id}')
-async def view_all(orders_id : str ):
+@router.get('/views/orders_id=?{orders_id}')
+async def view_all(orders_id : str, current_users : int = (Depends(auth2_admin.get_current_user))):
   try:
     db = curso()
     c = db.cursor()

@@ -8,8 +8,6 @@ from app.config import curso
 import uuid
 import random
 import string
-# from starlette.requests import Request
-from requests_oauthlib import OAuth2
 
 
 
@@ -28,7 +26,6 @@ router = APIRouter ()
 async def view(search_query : str):
   try:
     req = requests.get(f'http://host.docker.internal:9100/merchandise/views/query={search_query}')
-    # d = (json.dumps(req.json()).encode("utf-8"))
     j = (req.json())
   except Exception as e:
      print(f"Error {e}")
@@ -37,25 +34,17 @@ async def view(search_query : str):
   return j
 
 @router.get('/history/')
-async def historys(request: Request,current_user : int = Depends(auth2.get_current_user)):
+async def historys(current_user : int = Depends(auth2.get_current_user)):
   try: 
-    a = [request.url,
-    request._url,
-    request._get_form,
-    request.base_url]
-    print(a)
-    client_host = request.client.host
-    client_port = request.client.port
-    j = {"client_host": client_host,
-         "client_port": client_port}
-    req = requests.get(f'http://host.docker.internal:9100/transactions/views/id_customer={current_user.id}',auth=None)
-    # d = (json.dumps(req.json()).encode("utf-8"))
-    j = (req.json())
+    my_headers = {'Authorization' : f'Bearer {current_user.access_token}'}
+    response = requests.get(f'http://host.docker.internal:9100/transactions/views/id_customer={current_user.id}', headers=my_headers)
+    i = response.json()
   except Exception as e:
      print(f"Error {e}")
-     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                         detail="CAN'T FIND ANY PRODUCTS ")
-  return j
+     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Not authorized to perform requested action")
+   
+  return i
 
 @router.post('/cart/',status_code=status.HTTP_201_CREATED)
 async def create_order(new_order : schema.add,current_user : int = Depends(auth2.get_current_user)):

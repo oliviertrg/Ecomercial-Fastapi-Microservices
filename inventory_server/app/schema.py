@@ -1,5 +1,6 @@
 from pydantic import BaseModel,EmailStr
-from typing import Optional
+from typing import Optional,List
+
 from starlette.requests import Request
 from datetime import datetime
 
@@ -24,6 +25,19 @@ class update_users(BaseModel):
     username : str
     email : str
     is_staff : bool
+class history(BaseModel):
+    order_id : str 
+    id_customer : str 
+    payment_methods : str
+    order_status : str
+    order_date : str 
+    ship_date : str 
+    total_prices : float 
+    note : str 
+    cart : list = list()
+class List(BaseModel):
+     __root__: List[history]    
+        
 
 # class new_product(BaseModel):
 #     product : str

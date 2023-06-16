@@ -33,19 +33,38 @@ async def view(search_query : str):
                          detail="CAN'T FIND ANY PRODUCTS ")
   return j
 
+
 @router.get('/history/')
 async def historys(current_user : int = Depends(auth2.get_current_user)):
   try: 
+    db = curso()
+    c = db.cursor()
     my_headers = {'Authorization' : f'Bearer {current_user.access_token}'}
     response = requests.get(f'http://host.docker.internal:9100/transactions/views/id_customer={current_user.id}', headers=my_headers)
-    i = response.json()
+    h = response.json()
+    sql = f"""select * from cart where id_customer = {current_user.id}"""
+    c.execute(sql)
+    x = c.fetchall()
+   
+    for i in x :
+      t = schema.add(
+          orders_id = i[1] ,
+          item_id  = i[2] ,
+          item_name = i[3] ,
+          units_sold = i[4] ,
+          unit_price = float(i[5])  ,
+          total_prices = float(i[6]) ,
+          orders_status = i[7]
+       ).dict()
+      for j in h:
+         if j["order_id"]  == t["orders_id"]:
+            j["cart"].append(t)
   except Exception as e:
      print(f"Error {e}")
      raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Not authorized to perform requested action")
-   
-  return i
 
+  return h
 @router.post('/cart/',status_code=status.HTTP_201_CREATED)
 async def create_order(new_order : schema.add,current_user : int = Depends(auth2.get_current_user)):
  

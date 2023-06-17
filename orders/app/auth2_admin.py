@@ -33,7 +33,7 @@ def verify_access_token(token : str,credentials_exception) :
         user_id : str = payload.get("admins_id")
         if user_id is None :
             raise credentials_exception
-        token_data = schema.tokendata(id = user_id , access_token = token)
+        token_data = schema.tokendata(id = user_id )
     # except JWSError:
     # we were try but this shit ain't work
     except :

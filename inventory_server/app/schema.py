@@ -16,6 +16,7 @@ class login(BaseModel):
     
 class tokendata(BaseModel):
     id : Optional[str] = None
+    access_token : Optional[str] = None
     
 class token(BaseModel) :
     access_token : str
@@ -38,6 +39,8 @@ class history(BaseModel):
 class List(BaseModel):
      __root__: List[history]    
         
+class update_order_status(BaseModel):
+     orders_status : str
 
 # class new_product(BaseModel):
 #     product : str

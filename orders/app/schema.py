@@ -1,5 +1,5 @@
 from pydantic import BaseModel,EmailStr
-from typing import Optional
+from typing import Optional,List
 from starlette.requests import Request
 from datetime import datetime
 
@@ -17,7 +17,7 @@ class login(BaseModel):
     
 class tokendata(BaseModel):
     id : Optional[str] = None
-    access_token : str = None
+    access_token : Optional[str] = None
 class token(BaseModel) :
     access_token : str
     token_type : str
@@ -35,6 +35,9 @@ class add(BaseModel):
     unit_price : float
     total_prices : float = None
     orders_status : str = "unpaid"
+
+class items(BaseModel):
+     __root__: List[add]    
   
     
 class new_transactions(BaseModel):

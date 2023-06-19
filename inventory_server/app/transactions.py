@@ -57,9 +57,13 @@ async def historys(order_id:str,order_status:schema.update_order_status,current_
 
     c.execute(sql)
     y = c.fetchall()
+    
     if len(y) == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"order with id: {order_id} does not exist")
+    if y[0][3] == 'delivered' :
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="ALREADY SENT THE UPDATE STATUS CONFIRM ")
     else:
      try:
         sql1 = f"""UPDATE transactions SET 

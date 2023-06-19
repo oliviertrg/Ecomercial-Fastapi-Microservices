@@ -136,7 +136,7 @@ async def create_order(new_order : schema.add,current_user : int = Depends(auth2
 
 @router.delete('/delete-items/{item_id}',status_code=status.HTTP_204_NO_CONTENT)
 async def delete_order(item_id : int,current_user : int = Depends(auth2.get_current_user)):
-   try: 
+   
     db = curso()
     c = db.cursor()
     sql = f"""select * from "cart" where id_customer = '{int(current_user.id)}' and orders_status = 'unpaid' ; """
@@ -150,15 +150,16 @@ async def delete_order(item_id : int,current_user : int = Depends(auth2.get_curr
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Not authorized to perform requested action")
     else:
+      try:      
         sql1 = f"""delete from "cart" where id_customer = '{int(current_user.id)}'
                                       and orders_status = 'unpaid'  
                                       and "item_id" = '{item_id}';"""
         c.execute(sql1)
         db.commit()
-   except Exception as e:
-     print(f"Error {e}")
-     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="Not authorized to perform requested action")
+      except Exception as e:
+         print(f"Error {e}")
+         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                 detail="Not authorized to perform requested action")
       
 @router.post('/transactions/{order_id}')
 async def create_transactions(new_transactions : schema.new_transactions,order_id : str,current_user : int = Depends(auth2.get_current_user)):
@@ -182,6 +183,9 @@ async def create_transactions(new_transactions : schema.new_transactions,order_i
      print(f"Error {e}")
      raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Not authorized to perform requested action")
+   if len(x) == 0 :
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"order with users {int(current_user.id)} does not exist")
    if x[0][0] == 'unpaid':
       body = new_transactions.dict()    
       d = (json.dumps(body).encode("utf-8"))
@@ -190,6 +194,7 @@ async def create_transactions(new_transactions : schema.new_transactions,order_i
               where orders_id = '{order_id}'; """
       c.execute(sql3)
       db.commit()
+   
    else:
       raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
                             detail=f"YOUR ORDERS ({new_transactions.order_id}) ALREADY PAID SO YOU CANT DO IT AGAIN")   

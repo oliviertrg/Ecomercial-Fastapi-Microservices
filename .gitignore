@@ -1,3 +1,4 @@
 # Environments
-kafka/bitnami/*
+kafka/bitnami/*/
 kubernetes/secret/
+kafka/bitnami/

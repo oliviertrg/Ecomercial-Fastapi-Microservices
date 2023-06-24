@@ -30,7 +30,7 @@ def es():
         basic_auth=(config("ELASTIC_USER"),
                 config("ELASTIC_PASSWORD"))
     )
-  print("conecting susseccefull")
+  print("conecting Elasticsearch susseccefull")
  except Exception as e :
     print("-"*200)
     print("Connecting to database failed")

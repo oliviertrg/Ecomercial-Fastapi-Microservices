@@ -1,5 +1,4 @@
 from fastapi import FastAPI ,Response,status ,HTTPException,APIRouter,Depends, Request
-from fastapi.encoders import jsonable_encoder
 from app import auth2,auth2_admin,schema
 import requests
 import json
@@ -54,7 +53,7 @@ async def historys(current_user : int = Depends(auth2.get_current_user)):
           orders_status = i[7]
        ).dict()
       for j in h:
-         if j["order_id"]  == t["orders_id"]:
+         if j["order_id"] == t["orders_id"]:
             j["cart"].append(t)
   except Exception as e:
      print(f"Error {e}")
@@ -142,7 +141,6 @@ async def delete_order(item_id : int,current_user : int = Depends(auth2.get_curr
     sql = f"""select * from "cart" where id_customer = '{int(current_user.id)}' and orders_status = 'unpaid' ; """
     c.execute(sql)
     x = c.fetchall()
-    print(x)
     if len(x) == 0 :
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"order with users {int(current_user.id)} does not exist")
@@ -160,6 +158,8 @@ async def delete_order(item_id : int,current_user : int = Depends(auth2.get_curr
          print(f"Error {e}")
          raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                                  detail="Not authorized to perform requested action")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)  
+      
       
 @router.post('/transactions/{order_id}')
 async def create_transactions(new_transactions : schema.new_transactions,order_id : str,current_user : int = Depends(auth2.get_current_user)):

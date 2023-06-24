@@ -1,10 +1,8 @@
 from fastapi import FastAPI ,Response,status ,HTTPException,APIRouter,Depends, Request
 from app.config import es,curso
-from fastapi.encoders import jsonable_encoder
+
 from app import auth2_admin
-from app import schema
-import requests
-import json
+
 from datetime import datetime
 
 router = APIRouter (

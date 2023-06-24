@@ -50,33 +50,3 @@ class new_transactions(BaseModel):
     note : str 
         
     	
-# 	id_customer varchar(50) NOT NULL,
-# 	orders_id varchar(50) NOT NULL,
-# 	item_id varchar(50) NOT NULL,
-# 	item_name varchar(300) NOT NULL,
-# 	units_sold int4 NOT NULL,
-# 	unit_price numeric(10) NOT NULL,
-# 	total_prices numeric(10) NOT NULL,
-# 	orders_status varchar(50) NULL DEFAULT NULL::character varying,
-# 	create_at timestamptz NULL DEFAULT CURRENT_TIMESTAMP
-# );
-
-# class update_order(BaseModel):
-#     pizza_size: str
-#     flavour: str
-#     quantity: int
-# class Order_view(BaseModel):
-#     order_id : int
-#     user_id : int
-#     quantity: int
-#     order_status : Optional[str] = None
-#     pizza_size: str
-#     flavour: str
-#     create_at : str
-
-
-
-# class update_order(Order):
-#     pass
-# class update_order_status(BaseModel):
-#     orders_status : str

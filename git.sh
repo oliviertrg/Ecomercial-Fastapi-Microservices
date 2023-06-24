@@ -1,6 +1,6 @@
 git add --all
 
-git commit -m "fix some history problem"
+git commit -m "clean some useless code"
 
 git push -u origin main
 

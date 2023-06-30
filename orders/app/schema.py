@@ -31,7 +31,7 @@ class add(BaseModel):
     orders_id : str = None
     item_id : str
     item_name : str
-    units_sold : int = 1
+    units_sold : int = 0
     unit_price : float
     total_prices : float = None
     orders_status : str = "unpaid"
@@ -49,4 +49,6 @@ class new_transactions(BaseModel):
     total_prices : float = None
     note : str 
         
-    	
+class update_cart(BaseModel):
+    item_id : str 
+    units_sold : int = 0	

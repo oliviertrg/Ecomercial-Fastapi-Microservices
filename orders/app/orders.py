@@ -133,6 +133,32 @@ async def create_order(new_order : schema.add,current_user : int = Depends(auth2
      
  return new_order
 
+@router.put('/update-cart/')
+async def create_order(update : schema.update_cart,current_user : int = Depends(auth2.get_current_user)):
+
+    db = curso()
+    c = db.cursor()
+    sql = f"""select * from "cart" where id_customer = '{int(current_user.id)}' and orders_status = 'unpaid' ; """
+    c.execute(sql)
+    x = c.fetchall()
+    if len(x) == 0 :
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"order with users {int(current_user.id)} does not exist")
+    elif x[0][0] != int(current_user.id) :
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Not authorized to perform requested action")
+    else:
+      try:      
+        sql1 = f"""update cart set units_sold = {update.units_sold}
+              where item_id = '{update.item_id}' ;"""
+        c.execute(sql1)
+        db.commit()
+      except Exception as e:
+         print(f"Error {e}")
+         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                 detail="Not authorized to perform requested action")
+    return update
+
 @router.delete('/delete-items/{item_id}',status_code=status.HTTP_204_NO_CONTENT)
 async def delete_order(item_id : int,current_user : int = Depends(auth2.get_current_user)):
    

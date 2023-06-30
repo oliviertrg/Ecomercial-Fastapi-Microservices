@@ -1,6 +1,5 @@
 # Environments
 kubernetes/secret/*
-kafka/bitnami/*
-kafka/bitnami/kafka/data/cart_details-0/*
-kafka/bitnami/kafka/data/order_details-0/*
-kafka/bitnami/kafka/data/transactions_details-0/*
+
+
+

@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM pypy:latest
 # set the working directory
 WORKDIR /work
 
@@ -8,7 +8,7 @@ COPY ./requirements.txt ./
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 RUN pip install pydantic[email]
 RUN pip install python-multipart
-RUN pip install psycopg2-binary
+
 
 
 

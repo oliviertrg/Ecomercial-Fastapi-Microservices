@@ -8,6 +8,7 @@ import uuid
 import random
 import string
 from kafka import KafkaProducer
+import numpy as np
 
 ORDER_KAFKA_TOPIC = "transactions_details"
 
@@ -34,33 +35,30 @@ async def view(search_query : str):
 async def historys(current_user : int = Depends(auth2.get_current_user)):
   try: 
     db = curso()
-    c = db.cursor()
     my_headers = {'Authorization' : f'Bearer {current_user.access_token}'}
     response = requests.get(f'http://host.docker.internal:9100/transactions/views/id_customer={current_user.id}', headers=my_headers)
     h = response.json()
     sql = f"""select * from cart where id_customer = {current_user.id}"""
-    c.execute(sql)
-    x = c.fetchall()
-   
-    for i in x :
-      t = schema.add(
-          orders_id = i[1] ,
-          item_id  = i[2] ,
-          item_name = i[3] ,
-          units_sold = i[4] ,
-          unit_price = float(i[5])  ,
-          total_prices = float(i[6]) ,
-          orders_status = i[7]
-       ).dict()
-      for j in h:
-         if j["order_id"] == t["orders_id"]:
-            j["cart"].append(t)
+    a =  db.prepare(sql)
+    x = np.array(a())
+
+    for i in h :
+      if i['order_id'] in x[:,1]:
+        rows = np.where(x[:,1] == i['order_id'])
+        result = [{'order_id':j[1],'item_id':j[2],'item_name' : j[3],
+                   'units_sold' : j[4],'unit_price' : float(j[5]),
+                   'total_prices' : float(j[6]),'orders_status' : j[7] } for j in x[rows] ]
+        
+        i["cart"] = result    
+        
+
   except Exception as e:
      print(f"Error {e}")
      raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
                             detail="Not authorized to perform requested action")
 
   return h
+
 
 @router.get('/cart/views/orders_id={orders_id}')
 async def historys(orders_id : str,current_users : int = (Depends(auth2.get_current_user),Depends(auth2_admin.get_current_user))):

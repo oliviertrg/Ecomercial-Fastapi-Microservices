@@ -1,13 +1,19 @@
-import psycopg2
+# import psycopg2
 from elasticsearch import Elasticsearch
 from datetime import datetime
 # 1. Import the config object from decouple.
 from decouple import config
 
+# import psycopg2
+# 1. Import the config object from decouple.
+from decouple import config
+import psycopg2cffi
+
+
 
 def curso():
  try :
-    conn = psycopg2.connect(
+    conn = psycopg2cffi.connect(
         host = 'host.docker.internal',
         port=54323,
         database = config('POSTGRES_DB'),

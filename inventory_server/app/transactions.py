@@ -73,7 +73,7 @@ async def historys(order_id:str,order_status:schema.update_order_status,current_
         c.execute(sql1)
         db.commit()
         my_headers = {'Authorization' : f'Bearer {current_users.access_token}'}
-        response = requests.get(f'http://host.docker.internal:6969/cart/views/orders_id={order_id}', headers=my_headers)
+        response = await requests.get(f'http://host.docker.internal:6969/cart/views/orders_id={order_id}', headers=my_headers)
         h = response.json()
         for i in h :
          d = (json.dumps(i).encode("utf-8"))

@@ -1,5 +1,6 @@
-from fastapi import FastAPI ,Response,status ,HTTPException,APIRouter,Depends, Request
+from fastapi import FastAPI ,Response,status ,HTTPException,APIRouter,Depends, Request,cache
 from app import auth2,auth2_admin,schema
+from fastapi_redis_cache import RedisCache
 import requests
 import json
 from datetime import datetime
@@ -17,12 +18,12 @@ producer = KafkaProducer(bootstrap_servers=['host.docker.internal:9300'],
   
 
 router = APIRouter ()
-
+redis_cache = RedisCache()
 
 @router.get('/query={search_query}')
 async def view(search_query : str):
   try:
-    req = requests.get(f'http://host.docker.internal:9100/merchandise/views/query={search_query}')
+    req = await requests.get(f'http://host.docker.internal:9100/merchandise/views/query={search_query}')
     j = (req.json())
   except Exception as e:
      print(f"Error {e}")
@@ -32,11 +33,11 @@ async def view(search_query : str):
 
 
 @router.get('/history/')
-async def historys(current_user : int = Depends(auth2.get_current_user)):
+async def historys(current_user : int = Depends(auth2.get_current_user),cache=RedisCache(expire=60)):
   try: 
     db = curso()
     my_headers = {'Authorization' : f'Bearer {current_user.access_token}'}
-    response = requests.get(f'http://host.docker.internal:9100/transactions/views/id_customer={current_user.id}', headers=my_headers)
+    response = await requests.get(f'http://host.docker.internal:9100/transactions/views/id_customer={current_user.id}', headers=my_headers)
     h = response.json()
     sql = f"""select * from cart where id_customer = {current_user.id}"""
     a =  db.prepare(sql)
@@ -60,7 +61,7 @@ async def historys(current_user : int = Depends(auth2.get_current_user)):
   return h
 
 
-@router.get('/cart/views/orders_id={orders_id}')
+@router.get('/cart/views/orders_id={orders_id}',cache=RedisCache(expire=60))
 async def historys(orders_id : str,current_users : int = (Depends(auth2.get_current_user),Depends(auth2_admin.get_current_user))):
   try: 
     db = curso()

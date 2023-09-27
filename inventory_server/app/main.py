@@ -6,7 +6,11 @@ from starlette.requests import Request
 
 
 
-app = FastAPI()
+app = FastAPI(     
+        title="Ecomercial-Fastapi-Microservices",
+        description="inventory server -p : 9100 : latest"
+        # version="1.0.0"
+    )
 
 origins = ["http://0.0.0.0:9100/"]
 

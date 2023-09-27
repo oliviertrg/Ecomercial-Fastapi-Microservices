@@ -11,6 +11,6 @@ elasticsearch==8.7.0
 kafka_python
 psycopg2cffi==2.9.0
 psycopg2==2.9.7 
-
+fastapi-redis-cache==0.2.5
 
 

@@ -1,6 +1,6 @@
-from fastapi import FastAPI ,Response,status ,HTTPException,APIRouter,Depends, Request,cache
+from fastapi import FastAPI ,Response,status ,HTTPException,APIRouter,Depends, Request
 from app import auth2,auth2_admin,schema
-from fastapi_redis_cache import RedisCache
+from fastapi_cache import RedisCache
 import requests
 import json
 from datetime import datetime

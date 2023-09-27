@@ -2,8 +2,7 @@ from fastapi import FastAPI , status ,HTTPException,APIRouter
 from app import users,auth,auth_users,orders
 from fastapi.middleware.cors import  CORSMiddleware
 from starlette.requests import Request
-
-
+from fastapi_cache import RedisCache
 
 
 
@@ -27,7 +26,7 @@ app.include_router(users.router)
 app.include_router(auth.router)
 app.include_router(auth_users.router)
 app.include_router(orders.router)
-@app.get("/test")
+@app.get("/test",cache=RedisCache(expire=60))
 async def test():
     return {"testing":"done"}
 

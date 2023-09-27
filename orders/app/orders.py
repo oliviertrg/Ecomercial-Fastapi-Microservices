@@ -1,7 +1,8 @@
 from fastapi import FastAPI ,Response,status ,HTTPException,APIRouter,Depends, Request
 from app import auth2,auth2_admin,schema
-from fastapi_cache import RedisCache
 import requests
+from fastapi_cache import caches, close_caches
+from fastapi_cache.backends.redis import CACHE_KEY, RedisCacheBackend
 import json
 from datetime import datetime
 from app.config import curso
@@ -18,7 +19,6 @@ producer = KafkaProducer(bootstrap_servers=['host.docker.internal:9300'],
   
 
 router = APIRouter ()
-redis_cache = RedisCache()
 
 @router.get('/query={search_query}')
 async def view(search_query : str):
@@ -32,8 +32,12 @@ async def view(search_query : str):
   return j
 
 
+
+
+def redis_cache():
+    return caches.get(CACHE_KEY)
 @router.get('/history/')
-async def historys(current_user : int = Depends(auth2.get_current_user),cache=RedisCache(expire=60)):
+async def historys(current_user : int = Depends(auth2.get_current_user),cache: RedisCacheBackend = Depends(redis_cache)):
   try: 
     db = curso()
     my_headers = {'Authorization' : f'Bearer {current_user.access_token}'}
@@ -61,8 +65,8 @@ async def historys(current_user : int = Depends(auth2.get_current_user),cache=Re
   return h
 
 
-@router.get('/cart/views/orders_id={orders_id}',cache=RedisCache(expire=60))
-async def historys(orders_id : str,current_users : int = (Depends(auth2.get_current_user),Depends(auth2_admin.get_current_user))):
+@router.get('/cart/views/orders_id={orders_id}')
+async def historys(orders_id : str,current_users : int = (Depends(auth2.get_current_user),Depends(auth2_admin.get_current_user)),cache : RedisCacheBackend = Depends(redis_cache)):
   try: 
     db = curso()
     c = db.cursor()
